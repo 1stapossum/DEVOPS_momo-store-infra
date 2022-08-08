@@ -1,0 +1,8 @@
+#cloud-config
+users:
+  - name: vav
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCnnpDEhU04UYgoPlTduujtQt7dY+AAlfOXSzHmt8MXftZqdLVObl53kSLcbsri8ssyGsN7xT/pbHn4DOFYsN09SiZOs6m5sbFtii4JIhZMtmTIGajN5J1xLRN1zxlxL6RbjJiAGUkfcvsOGNnIFWfGdpomyx/qFvMnop6M3yYVXp7cugpTUiDAbcqgqlf2JHujkY3lqw8wCkO8JJjn0Gmub4M2XuyUp/sI8iCxX1TQn6Wa7ZN72hJQtCCQDuxJ5FPjNOciiJ5BSqNSFYdZWQkcAY7ieVxVQECahS8XfFii65H1Mt6qo8nxFd7hq4fkSxTJ8h8keyP/ZSRDsrxpeuL7WXVO8YXWAyy6VXRcwSFhXLQu1jA4HKwDpEX3ts13w+PlA0Ia9dW0oIZoXSVaGcy0AwxCLF6wq0z39Nw5JkA2RM/t0lse3uCZfvZGUOEap0nAy7VdEoHAvTzBV7sZ4mUcM0jZtFqiksKL7TXQmwv5lKs8fXjcTu58XoW9UGk46hboh2B+0ct3ok22wAe6CNRiERhUjPjAHHClaTi6gJvZcT3ypEJoETQyWjv9ZybgN1QdDA5SI+a08NNcGiMOAY9BisJ6eMdqPOIq8t1hbvBafBxJnpfQwcrPNXRTDEdbxk6Vg7fGIcj2L2ipvLaCCpVH6/tLws1YOMu6OtjjGQpLsw== vav@vav-All-Series

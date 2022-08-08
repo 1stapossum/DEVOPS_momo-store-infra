@@ -1,0 +1,8 @@
+groups:
+- name: example
+  rules:
+  - alert: exampleK8s
+    expr: pod_volume_used_bytes{cluster_id="k8s-prod", folderId="b1g26hqnugteh52j2dfr", instance="monitoring.api.cloud.yandex.net:80", job="yandex_service_managed-kubernetes", namespace="kube-system", pod="yc-disk-csi-node-v2-drvmw", service="catkvctgrte4hunhvs8f", volume="default-token-7d4g4"} > 5
+    labels:
+      severity: CRITICAL
+

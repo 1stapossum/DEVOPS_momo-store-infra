@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: 15
+  # Стратегия развёртывания. Recreate — удалит сначала все старые поды 
+  # Есть и более гибкая стратегии, например, RollingUpdate, которая будет обновлять поды порциями  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 20
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.image }}:{{ .Values.tag }}"
+          imagePullPolicy: Always
+          ports:
+            - name: backend
+              containerPort: {{ .Values.containerport }}
+          
+      imagePullSecrets:
+        - name: docker-config-secret
