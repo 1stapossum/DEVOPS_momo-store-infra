@@ -1,0 +1,15 @@
+variables:
+  VERSION: 0.1.${CI_PIPELINE_ID}
+
+stages:
+  - package
+  - deploy
+
+package:
+  stage: package
+  image: alpine/k8s:1.22.6
+  
+  script:
+    - sed -i "s/0\.1\.2/$VERSION/g" momo-store-chart/Chart.yaml
+    - helm package momo-store-chart --app-version $VERSION
+    - curl -u ${NEXUS_REPO_USER}:${NEXUS_REPO_PASS} ${NEXUS_HELM_REPO_URL} --upload-file 
