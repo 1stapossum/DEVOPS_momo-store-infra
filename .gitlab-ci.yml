@@ -13,3 +13,9 @@ package:
     - sed -i "s/0\.1\.2/$VERSION/g" momo-store-chart/Chart.yaml
     - helm package momo-store-chart --app-version $VERSION --version $VERSION
     - curl -u ${NEXUS_REPO_USER}:${NEXUS_REPO_PASS} ${NEXUS_HELM_REPO_URL} --upload-file momo-store*.tgz
+
+deploy:
+  stage: deploy
+  image: argoproj/argocd:v2.3.3
+  script:
+   - argocd --grpc-web --auth-token $ARGO_TOKEN --server $ARGO_SERVER app sync momo-store
