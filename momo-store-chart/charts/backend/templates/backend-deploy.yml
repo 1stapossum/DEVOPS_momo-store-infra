@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.image }}:{{ .Values.tag }}"
+          image: "{{ .Values.image }}"
           imagePullPolicy: Always
           ports:
             - name: backend
