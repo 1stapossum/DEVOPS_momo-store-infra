@@ -1,7 +1,7 @@
 backend:
   image: gitlab.praktikum-services.ru:5050/antinitrino/momo-store-antinitrino/momo-backend
   tag: latest
-  replicas: 2
+  replicas: 3
   containerport: 8081
   minallowed_cpu: 0
   minallowed_memory: 0
