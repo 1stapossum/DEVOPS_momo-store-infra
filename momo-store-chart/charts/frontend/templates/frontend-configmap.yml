@@ -8,6 +8,7 @@ data:
     events { 
     } 
     http { 
+      include mime.types;
       server { 
         listen 80; 
         location / { 
