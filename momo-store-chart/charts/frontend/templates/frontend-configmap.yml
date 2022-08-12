@@ -8,7 +8,7 @@ data:
     events { 
     } 
     http { 
-      include mime.types;
+      include /etc/nginx/mime.types;
       server { 
         listen 80; 
         location / { 
