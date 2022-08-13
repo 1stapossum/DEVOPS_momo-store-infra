@@ -25,5 +25,8 @@ data:
       location /auth {
       proxy_pass http://backend:8081;
     } 
+      location /orders {
+      proxy_pass http://backend:8081;
+    } 
       } 
         }

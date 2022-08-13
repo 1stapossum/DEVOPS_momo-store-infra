@@ -19,5 +19,6 @@ deploy:
   stage: deploy
   image: argoproj/argocd:v2.3.3
   script:
+   - sleep 10
    - argocd --grpc-web --auth-token $ARGO_TOKEN --server $ARGO_SERVER app sync momo-store
   when: manual
