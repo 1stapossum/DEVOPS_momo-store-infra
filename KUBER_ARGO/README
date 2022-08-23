@@ -1,0 +1,4 @@
+kubectl create namespace argocd
+kubectl apply -n argocd -f argocd.yml
+kubectl apply -n argocd -f ingress.yml
+kubectl apply -n argocd -f user.yml

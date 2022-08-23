@@ -1,0 +1,172 @@
+volumes:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:
+  sonarqube-temp:
+  sonarqube-postgres:
+  sonarqube-postgres-data:
+  sonarqube-postgres-backups:
+  sonarqube-data-backups:
+  traefik-certificates:
+  nexus-data: 
+
+services:
+  postgres:
+    # Image tag (replace with yours)
+    image: postgres:13.4
+    volumes:
+      - sonarqube-postgres:/var/lib/postgresql
+      - sonarqube-postgres-data:/var/lib/postgresql/data
+    environment:
+      # Database user (replace with yours)
+      POSTGRES_USER: sonardbuser
+      # Database password (replace with yours)
+      POSTGRES_PASSWORD: KV3Yp*a6k*Rnxo9DCf*V7cH
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  sonarqube:
+    # Image tag (replace with yours)
+    image: sonarqube:9.0-community
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-temp:/opt/sonarqube/temp
+    environment:
+      SONAR_JpostgresC_URL: jpostgresc:postgresql://postgres:5432/sonar
+      # Database user (replace with yours)
+      SONAR_JpostgresC_USERNAME: sonardbuser
+      # Database password (replace with yours)
+      SONAR_JpostgresC_PASSWORD: KV3Yp*a6k*Rnxo9DCf*V7cH
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:9000/","--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      # SonarQube URL (replace with yours)
+      - "traefik.http.routers.sonarqube.rule=Host(`sonarqube.avolokhov.pro`)"
+      - "traefik.http.routers.sonarqube.service=sonarqube"
+      - "traefik.http.routers.sonarqube.entrypoints=websecure"
+      - "traefik.http.services.sonarqube.loadbalancer.server.port=9000"
+      - "traefik.http.routers.sonarqube.tls=true"
+      - "traefik.http.routers.sonarqube.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sonarqube.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.sonarqube.middlewares=compresstraefik"
+      - "traefik.http.middlewares.compresstraefik.compress=true"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      traefik:
+        condition: service_healthy
+
+  traefik:
+    # Image tag (replace with yours)
+    image: traefik:2.5
+    command:
+      - "--log.level=WARN"
+      - "--accesslog=true"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--ping=true"
+      - "--ping.entrypoint=ping"
+      - "--entryPoints.ping.address=:8082"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedByDefault=false"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      # Email for Let's Encrypt (replace with yours)
+      - "--certificatesresolvers.letsencrypt.acme.email=me@avolokhov.ru"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--global.checkNewVersion=true"
+      - "--global.sendAnonymousUsage=false"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-certificates:/etc/traefik/acme
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8082/ping","--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      # Traefik URL (replace with yours)
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.avolokhov.pro`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.dashboard.middlewares=authtraefik"
+      # Basic Authentication for Traefik Dashboard
+      # Username: traefikadmin (replace with yours)
+      # Passwords must be encoded using MD5, SHA1, or BCrypt https://hostingcanada.org/htpasswd-generator/
+      - "traefik.http.middlewares.authtraefik.basicauth.users=admin:{SHA}jLIjfQZ5yojbZGTqxg2pY0VROWQ="
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    restart: unless-stopped
+
+  nexus:
+    image: sonatype/nexus3
+    volumes:
+      - "nexus-data:/nexus-data"
+    labels:
+    - "traefik.enable=true"
+        # SonarQube URL (replace with yours)
+    - "traefik.http.routers.nexus.rule=Host(`nexus.avolokhov.pro`)"
+    - "traefik.http.routers.nexus.service=nexus"
+    - "traefik.http.routers.nexus.entrypoints=websecure"
+    - "traefik.http.services.nexus.loadbalancer.server.port=8081"
+    - "traefik.http.routers.nexus.tls=true"
+    - "traefik.http.routers.nexus.tls.certresolver=letsencrypt"
+    - "traefik.http.services.nexus.loadbalancer.passhostheader=true"
+    - "traefik.http.routers.nexus.middlewares=compresstraefik"
+    - "traefik.http.middlewares.compresstraefik.compress=true"
+  
+
+  
+
+
+#  vault:
+#      env_file:
+#        - .env
+#      image: vault
+#      container_name: vault
+#      ports:
+#        - "8200:8200"
+#      environment:
+#        VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID}
+#        VAULT_SERVER: "http://127.0.0.1:8200"
+#        VAULT_ADDR: "http://127.0.0.1:8200"
+#      labels:
+#        - "traefik.enable=true"
+#        # SonarQube URL (replace with yours)
+#        - "traefik.http.routers.vault.rule=Host(`vault.avolokhov.pro`)"
+#        - "traefik.http.routers.vault.service=vault"
+#        - "traefik.http.routers.vault.entrypoints=websecure"
+#        - "traefik.http.services.vault.loadbalancer.server.port=8200"
+#        - "traefik.http.routers.vault.tls=true"
+#        - "traefik.http.routers.vault.tls.certresolver=letsencrypt"
+#        - "traefik.http.services.vault.loadbalancer.passhostheader=true"
+#        - "traefik.http.routers.vault.middlewares=compresstraefik"
+#        - "traefik.http.middlewares.compresstraefik.compress=true"

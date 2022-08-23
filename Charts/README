@@ -1,0 +1,11 @@
+GRAFANA
+helm upgrade --install grafana ./grafana --atomic
+
+Prometheus
+helm upgrade --install prometheus ./prometheus --atomic
+kubectl apply -f admin-user.yml
+
+Loki-stack
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm upgrade --install loki grafana/loki-stack

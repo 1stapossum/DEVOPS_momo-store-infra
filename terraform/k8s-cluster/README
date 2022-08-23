@@ -1,0 +1,3 @@
+
+terraform init -backend-config=backend.conf
+terraform apply -var-file secret.tfvars

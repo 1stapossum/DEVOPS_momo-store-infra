@@ -1,0 +1,2 @@
+helm upgrade --install prometheus ./prometheus --atomic
+kubectl apply -f admin-user.yml
