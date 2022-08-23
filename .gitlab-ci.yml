@@ -10,7 +10,7 @@ package:
   image: alpine/k8s:1.22.6
   
   script:
-    - helm package momo-store-chart --app-version $VERSION --version $VERSION
+    - helm package Charts/momo-store-chart --app-version $VERSION --version $VERSION
     - curl -u ${NEXUS_REPO_USER}:${NEXUS_REPO_PASS} ${NEXUS_HELM_REPO_URL} --upload-file momo-store*.tgz
 
 #Deploy ONLY Charts
